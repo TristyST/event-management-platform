@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import dotenv from "dotenv";
 
 import pool from "./db/database";
@@ -8,17 +9,20 @@ import eventsRoutes from "./events/events.routes";
 import registrationsRoutes from "./registrations/registrations.routes";
 import feedbackRoutes from "./feedback/feedback.routes";
 
-import {
-    authenticateToken,
-    requireRole,
-    AuthRequest
-} from "./middleware/auth.middleware";
-
 dotenv.config();
 
 const app = express();
 
 const PORT = Number(process.env.PORT) || 3000;
+
+// CORS
+app.use(
+    cors({
+        origin: "http://localhost:5173",
+        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization"]
+    })
+);
 
 app.use(express.json());
 
@@ -54,31 +58,6 @@ app.get("/api/health/db", async (_req, res) => {
         });
     }
 });
-
-// Temporary JWT test
-app.get(
-    "/api/test-auth",
-    authenticateToken,
-    (req: AuthRequest, res) => {
-        res.json({
-            message: "Авторизація працює",
-            user: req.user
-        });
-    }
-);
-
-// Temporary organizer role test
-app.get(
-    "/api/test-organizer",
-    authenticateToken,
-    requireRole("organizer"),
-    (req: AuthRequest, res) => {
-        res.json({
-            message: "Доступ організатора дозволено",
-            user: req.user
-        });
-    }
-);
 
 app.listen(PORT, () => {
     console.log(

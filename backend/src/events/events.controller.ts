@@ -398,3 +398,44 @@ export const completeEvent = async (
         });
     }
 };
+
+export const getMyEvents = async (
+    req: AuthRequest,
+    res: Response
+) => {
+    try {
+        if (!req.user) {
+            return res.status(401).json({
+                message: "Користувач не авторизований"
+            });
+        }
+
+        const result = await pool.query(
+            `SELECT
+                e.id,
+                e.title,
+                e.short_description,
+                e.description,
+                e.event_date,
+                e.event_time,
+                e.location,
+                e.capacity,
+                e.status,
+                e.created_at
+            FROM events e
+            WHERE e.organizer_id = $1
+            ORDER BY e.event_date DESC, e.event_time DESC`,
+            [req.user.id]
+        );
+
+        res.json({
+            events: result.rows
+        });
+    } catch (error) {
+        console.error("Get my events error:", error);
+
+        res.status(500).json({
+            message: "Помилка сервера"
+        });
+    }
+};

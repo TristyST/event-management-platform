@@ -1,8 +1,10 @@
 import { Router } from "express";
+
 import {
     authenticateToken,
     requireRole
 } from "../middleware/auth.middleware";
+
 import {
     registerForEvent,
     getMyRegistrations,
@@ -10,6 +12,13 @@ import {
 } from "./registrations.controller";
 
 const router = Router();
+
+router.get(
+    "/my",
+    authenticateToken,
+    requireRole("participant"),
+    getMyRegistrations
+);
 
 router.get(
     "/event/:id",
@@ -26,4 +35,3 @@ router.post(
 );
 
 export default router;
-

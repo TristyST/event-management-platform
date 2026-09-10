@@ -6,7 +6,8 @@ import {
     getEventById,
     updateEvent,
     publishEvent,
-    completeEvent
+    completeEvent,
+    getMyEvents
 } from "./events.controller";
 
 import {
@@ -15,6 +16,13 @@ import {
 } from "../middleware/auth.middleware";
 
 const router = Router();
+
+router.get(
+    "/my",
+    authenticateToken,
+    requireRole("organizer"),
+    getMyEvents
+);
 
 router.get("/", getEvents);
 
