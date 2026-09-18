@@ -16,13 +16,24 @@ export async function apiRequest(
             `Bearer ${token}`;
     }
 
-    const response = await fetch(
-        `${API_URL}${endpoint}`,
-        {
+    const url = `${API_URL}${endpoint}`;
+
+    console.log("API request:", {
+        url,
+        method: options.method || "GET"
+    });
+
+    let response: Response;
+
+    try {
+        response = await fetch(url, {
             ...options,
             headers
-        }
-    );
+        });
+    } catch (error) {
+        console.error("API fetch error:", error);
+        throw error;
+    }
 
     const data = await response
         .json()

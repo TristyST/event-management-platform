@@ -5,6 +5,8 @@ import pool from "../db/database";
 
 const JWT_SECRET = process.env.JWT_SECRET || "development_secret";
 
+const INVALID_CREDENTIALS_MESSAGE = "Неправильний email або пароль";
+
 export const register = async (req: Request, res: Response) => {
     try {
         const { name, email, password, role } = req.body;
@@ -71,7 +73,7 @@ export const login = async (req: Request, res: Response) => {
 
         if (result.rows.length === 0) {
             return res.status(401).json({
-                message: "Неправильний email або пароль"
+                message: INVALID_CREDENTIALS_MESSAGE
             });
         }
 
@@ -84,7 +86,7 @@ export const login = async (req: Request, res: Response) => {
 
         if (!passwordValid) {
             return res.status(401).json({
-                message: "Неправильний email або пароль"
+                message: INVALID_CREDENTIALS_MESSAGE
             });
         }
 

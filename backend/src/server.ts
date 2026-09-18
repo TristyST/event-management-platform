@@ -1,5 +1,5 @@
 import express from "express";
-import cors from "cors";
+import cors, { CorsOptions } from "cors";
 import dotenv from "dotenv";
 
 import pool from "./db/database";
@@ -15,31 +15,26 @@ const app = express();
 
 const PORT = Number(process.env.PORT) || 3000;
 
-// CORS
-app.use(
-    cors({
-        origin: "http://localhost:5173",
-        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        allowedHeaders: ["Content-Type", "Authorization"]
-    })
-);
+const corsOptions: CorsOptions = {
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+};
 
+app.use(cors(corsOptions));
 app.use(express.json());
 
-// API routes
 app.use("/api/auth", authRoutes);
 app.use("/api/events", eventsRoutes);
 app.use("/api/registrations", registrationsRoutes);
 app.use("/api/feedback", feedbackRoutes);
 
-// Health check
 app.get("/api/health", (_req, res) => {
     res.json({
         status: "ok"
     });
 });
 
-// Database health check
 app.get("/api/health/db", async (_req, res) => {
     try {
         const result = await pool.query("SELECT NOW()");

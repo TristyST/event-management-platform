@@ -1,6 +1,20 @@
 import { Response } from "express";
+import { PoolClient } from "pg";
 import pool from "../db/database";
 import { AuthRequest } from "../middleware/auth.middleware";
+
+const rollbackWithError = async (
+    client: PoolClient,
+    res: Response,
+    statusCode: number,
+    message: string
+) => {
+    await client.query("ROLLBACK");
+
+    return res.status(statusCode).json({
+        message
+    });
+};
 
 export const registerForEvent = async (
     req: AuthRequest,
@@ -34,21 +48,23 @@ export const registerForEvent = async (
         );
 
         if (eventResult.rows.length === 0) {
-            await client.query("ROLLBACK");
-
-            return res.status(404).json({
-                message: "Захід не знайдено"
-            });
+            return rollbackWithError(
+                client,
+                res,
+                404,
+                "Захід не знайдено"
+            );
         }
 
         const event = eventResult.rows[0];
 
         if (event.status !== "published") {
-            await client.query("ROLLBACK");
-
-            return res.status(400).json({
-                message: "Реєстрація доступна лише на опубліковані заходи"
-            });
+            return rollbackWithError(
+                client,
+                res,
+                400,
+                "Реєстрація доступна лише на опубліковані заходи"
+            );
         }
 
         const existingRegistration = await client.query(
@@ -59,11 +75,12 @@ export const registerForEvent = async (
         );
 
         if (existingRegistration.rows.length > 0) {
-            await client.query("ROLLBACK");
-
-            return res.status(409).json({
-                message: "Ви вже зареєстровані на цей захід"
-            });
+            return rollbackWithError(
+                client,
+                res,
+                409,
+                "Ви вже зареєстровані на цей захід"
+            );
         }
 
         const countResult = await client.query(
@@ -76,11 +93,12 @@ export const registerForEvent = async (
         const registeredCount = countResult.rows[0].count;
 
         if (registeredCount >= event.capacity) {
-            await client.query("ROLLBACK");
-
-            return res.status(409).json({
-                message: "Вільних місць на захід більше немає"
-            });
+            return rollbackWithError(
+                client,
+                res,
+                409,
+                "Вільних місць на захід більше немає"
+            );
         }
 
         const registrationResult = await client.query(
@@ -225,4 +243,3 @@ export const getEventRegistrations = async (
         });
     }
 };
-

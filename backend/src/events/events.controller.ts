@@ -2,6 +2,23 @@ import { Response } from "express";
 import pool from "../db/database";
 import { AuthRequest } from "../middleware/auth.middleware";
 
+const getEventId = (
+    req: AuthRequest,
+    res: Response
+): number | null => {
+    const eventId = Number(req.params.id);
+
+    if (Number.isNaN(eventId)) {
+        res.status(400).json({
+            message: "Недійсний ID заходу"
+        });
+
+        return null;
+    }
+
+    return eventId;
+};
+
 export const createEvent = async (
     req: AuthRequest,
     res: Response
@@ -124,12 +141,10 @@ export const getEventById = async (
     res: Response
 ) => {
     try {
-        const eventId = Number(req.params.id);
+        const eventId = getEventId(req, res);
 
-        if (Number.isNaN(eventId)) {
-            return res.status(400).json({
-                message: "Недійсний ID заходу"
-            });
+        if (eventId === null) {
+            return;
         }
 
         const result = await pool.query(
@@ -181,12 +196,10 @@ export const updateEvent = async (
             });
         }
 
-        const eventId = Number(req.params.id);
+        const eventId = getEventId(req, res);
 
-        if (Number.isNaN(eventId)) {
-            return res.status(400).json({
-                message: "Недійсний ID заходу"
-            });
+        if (eventId === null) {
+            return;
         }
 
         const existingEvent = await pool.query(
@@ -286,12 +299,10 @@ export const publishEvent = async (
             });
         }
 
-        const eventId = Number(req.params.id);
+        const eventId = getEventId(req, res);
 
-        if (Number.isNaN(eventId)) {
-            return res.status(400).json({
-                message: "Недійсний ID заходу"
-            });
+        if (eventId === null) {
+            return;
         }
 
         const existingEvent = await pool.query(
@@ -345,12 +356,10 @@ export const completeEvent = async (
             });
         }
 
-        const eventId = Number(req.params.id);
+        const eventId = getEventId(req, res);
 
-        if (Number.isNaN(eventId)) {
-            return res.status(400).json({
-                message: "Недійсний ID заходу"
-            });
+        if (eventId === null) {
+            return;
         }
 
         const existingEvent = await pool.query(
